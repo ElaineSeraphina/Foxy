@@ -12,7 +12,7 @@ repo_url_target = 'https://github.com/ElaineSeraphina/Foxy.git'
 
 # Direktori lokal untuk repository source dan target
 local_dir = '/storage/emulated/0/Proxy_Free'
-target_dir = '/tmp/Foxy'
+target_dir = '/storage/emulated/0/Foxy'
 
 # Path untuk file kredensial dan file log
 credentials_path = '/storage/emulated/0/github/file.txt'
