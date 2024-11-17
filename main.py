@@ -1,4 +1,5 @@
 import os
+import shutil
 import git
 from git import Repo, GitCommandError
 from datetime import datetime
@@ -76,27 +77,31 @@ def update_target_repo():
     else:
         repo_target = Repo(target_dir)
     
-    # Copy file baru ke target directory dan lakukan commit serta push ke branch 'main'
-    os.system(f'cp {file_path} {target_dir}')
-    repo_target.git.add(A=True)
-    repo_target.index.commit(f"Auto update: {file_name}")
-    write_log(f"File {file_name} berhasil ditambahkan dan di-commit ke repo target.")
-    
-    # Pastikan push berhasil
-    upload_success = False
-    retries = 3
-    while not upload_success and retries > 0:
-        try:
-            repo_target.remotes.origin.push(refspec='main:main')
-            write_log(f"Upload berhasil untuk {file_name} ke branch 'main'.")
-            upload_success = True
-        except GitCommandError as e:
-            retries -= 1
-            write_log(f"Gagal upload: {e}. Mencoba ulang ({3 - retries} / 3)")
-            time.sleep(5)  # Jeda 5 detik sebelum mencoba lagi
+    # Salin file baru ke target directory dan lakukan commit serta push ke branch 'main'
+    try:
+        shutil.copy(file_path, target_dir)  # Menggunakan shutil untuk menyalin file
+        repo_target.git.add(A=True)
+        repo_target.index.commit(f"Auto update: {file_name}")
+        write_log(f"File {file_name} berhasil ditambahkan dan di-commit ke repo target.")
+        
+        # Pastikan push berhasil
+        upload_success = False
+        retries = 3
+        while not upload_success and retries > 0:
+            try:
+                repo_target.remotes.origin.push(refspec='main:main')
+                write_log(f"Upload berhasil untuk {file_name} ke branch 'main'.")
+                upload_success = True
+            except GitCommandError as e:
+                retries -= 1
+                write_log(f"Gagal upload: {e}. Mencoba ulang ({3 - retries} / 3)")
+                time.sleep(5)  # Jeda 5 detik sebelum mencoba lagi
 
-    if not upload_success:
-        write_log("Gagal upload setelah 3 percobaan. Periksa koneksi atau kredensial.")
+        if not upload_success:
+            write_log("Gagal upload setelah 3 percobaan. Periksa koneksi atau kredensial.")
+    
+    except Exception as e:
+        write_log(f"Terjadi kesalahan saat menyalin atau mengunggah file: {e}")
 
 # Main proses: cek pembaruan dan upload dengan progress bar untuk setiap iterasi
 def main():
