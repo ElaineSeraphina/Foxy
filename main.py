@@ -69,12 +69,18 @@ def update_target_repo():
     # Proses upload file ke branch 'main' di repo target
     username, password = get_credentials()
     
-    # Clone repo target jika belum ada
+    # Cek jika repo target sudah ada, jika belum clone
     if not os.path.exists(target_dir):
+        write_log("Repositori target belum ada, meng-clone repositori...")
         repo_target = Repo.clone_from(f'https://{username}:{password}@{repo_url_target}', target_dir, branch='main')
         write_log("Cloned repository target for the first time.")
     else:
-        repo_target = Repo(target_dir)
+        try:
+            repo_target = Repo(target_dir)
+            write_log(f"Repositori target ditemukan di {target_dir}.")
+        except git.exc.InvalidGitRepositoryError:
+            write_log(f"Direktori {target_dir} bukan repositori Git yang valid, meng-clone ulang...")
+            repo_target = Repo.clone_from(f'https://{username}:{password}@{repo_url_target}', target_dir, branch='main')
     
     # Copy file baru ke target directory dan lakukan commit serta push ke branch 'main'
     os.system(f'cp {file_path} {target_dir}')
